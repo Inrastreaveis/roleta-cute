@@ -76,9 +76,13 @@
             <button id="startDraw" class="primary-button draw-button" type="button">Girar a roleta <span>✧</span></button>
             <div id="drawStatus" class="draw-status">Pronto para sortear? Boa sorte! 💗</div>
             <div id="currentWinners" class="current-winners"></div>
+            <div class="draw-reset-actions">
+              <button id="recreateKeepParticipants" class="secondary-button" type="button">Recriar mantendo participantes</button>
+              <button id="recreateClearParticipants" class="danger-outline-button" type="button">Recriar e remover participantes</button>
+            </div>
           </div>
         </div>
-        <div class="panel-card history-panel"><div class="panel-title-row"><div><span class="eyebrow">REGISTROS</span><h3>Histórico de sorteios</h3></div></div><div id="drawHistory" class="history-list"><p class="empty-state">Nenhum sorteio realizado ainda.</p></div></div>
+        <div class="panel-card history-panel"><div class="panel-title-row"><div><span class="eyebrow">REGISTROS</span><h3>Histórico de sorteios</h3></div><button id="clearDrawHistory" class="danger-text-button" type="button">Limpar histórico</button></div><div id="drawHistory" class="history-list"><p class="empty-state">Nenhum sorteio realizado ainda.</p></div></div>
       </section>
 
       <section class="admin-tab" id="tab-appearance">
@@ -112,7 +116,7 @@
           <form id="linkForm" class="link-editor-form">
             <div class="form-section-heading"><span>🔗</span><div><h3 id="linkFormTitle">Adicionar novo link</h3><p>Escolha um nome, ícone, cor e endereço.</p></div></div>
             <input id="editingLinkId" type="hidden">
-            <div class="link-form-grid"><div><label for="linkLabel">Nome do link</label><input id="linkLabel" maxlength="40" placeholder="Ex.: Meu Live Pix" required></div><div><label for="linkIcon">Ícone ou emoji</label><input id="linkIcon" maxlength="8" value="💗" placeholder="💗"></div><div class="link-url-field"><label for="linkUrl">Endereço (URL)</label><input id="linkUrl" type="url" placeholder="https://..." required></div><div><label for="linkColor">Cor do botão</label><input id="linkColor" type="color" value="#f3a6c8"></div></div>
+            <div class="link-form-grid"><div><label for="linkLabel">Nome do link</label><input id="linkLabel" maxlength="40" placeholder="Ex.: Meu Live Pix" required></div><div><label for="linkIconType">Tipo de ícone</label><select id="linkIconType"><option value="emoji">Emoji</option><option value="image">Imagem</option></select></div><div id="linkIconEmojiWrap"><label for="linkIcon">Ícone ou emoji</label><input id="linkIcon" maxlength="8" value="💗" placeholder="💗"></div><div id="linkIconImageWrap" hidden><label for="linkIconFile">Imagem do ícone</label><input id="linkIconFile" type="file" accept="image/jpeg,image/png,image/webp"><span id="linkIconFileName" class="file-name">PNG, JPG ou WEBP · até 3 MB</span><input id="linkExistingIconUrl" type="hidden"></div><div class="link-url-field"><label for="linkUrl">Endereço (URL)</label><input id="linkUrl" type="url" placeholder="https://..." required></div><div><label for="linkColor">Cor do botão</label><input id="linkColor" type="color" value="#f3a6c8"></div></div>
             <div class="form-actions"><button id="cancelLinkEdit" class="secondary-button" type="button" hidden>Cancelar edição</button><button class="primary-button" type="submit" id="saveLinkButton">Adicionar link <span>+</span></button></div>
           </form>
           <div class="form-divider"></div>
@@ -138,14 +142,20 @@
         <div class="panel-card" id="userManagementPanel">
           <div class="form-section-heading"><span>♙</span><div><h3>Adicionar pessoa autorizada</h3><p>A pessoa cria sua própria conta e você libera o acesso pelo e-mail.</p></div></div>
           <form id="userForm" class="user-form"><div><label for="newUsername">E-mail da conta</label><input id="newUsername" type="email" placeholder="email@exemplo.com" required></div><div><label for="newUserRole">Permissão</label><select id="newUserRole"><option value="moderator">Moderador — adicionar e remover nomes</option><option value="admin">Administrador — gerenciar site e participantes</option></select></div><button class="primary-button" type="submit">Autorizar conta <span>+</span></button></form><p class="helper-text">A pessoa precisa criar uma conta pela página de acesso antes. Depois informe aqui o mesmo e-mail para liberar as permissões.</p>
-          <div class="form-divider"></div><div class="panel-title-row"><div><h3>Pessoas autorizadas</h3><small>Você pode remover o acesso a qualquer momento.</small></div></div><div id="adminUsersList" class="admin-users-list"></div>
+          <div class="form-divider"></div><div class="panel-title-row"><div><h3>Pessoas autorizadas</h3><small>Marque quem poderá girar a roleta na página pública.</small></div></div><div id="adminUsersList" class="admin-users-list"></div><p class="helper-text">Depois de liberar, a pessoa deve entrar pelo link “Acesso da equipe” e abrir a página pública para ver o botão.</p>
         </div>
-        <div class="permission-explainer"><p><strong>Proprietário:</strong> você. Controle total, inclusive das permissões.</p><p><strong>Administrador:</strong> pode gerenciar participantes, sorteios, aparência, links e música.</p><p><strong>Moderador:</strong> pode somente adicionar e remover participantes.</p></div>
+        <div class="permission-explainer"><p><strong>Proprietário:</strong> você. Sempre pode girar a roleta e gerenciar permissões.</p><p><strong>Permissão para girar:</strong> ative individualmente em cada conta autorizada. O botão aparece para essas pessoas na página pública.</p><p><strong>Visitantes:</strong> veem a roleta e os resultados, mas não conseguem iniciar nem refazer sorteios.</p></div>
       </section>
 
       <section class="admin-tab" id="tab-security">
         <div class="section-intro"><span class="eyebrow">PROTEJA SEU PAINEL</span><h2>Segurança da conta</h2><p>Altere sua senha de acesso sempre que desejar.</p></div>
-        <div class="panel-card security-card"><div class="form-section-heading"><span>🔒</span><div><h3>Alterar senha</h3><p>Use uma senha forte com pelo menos 8 caracteres.</p></div></div><form id="passwordForm" class="stack-form"><label for="currentPassword">Senha atual</label><input id="currentPassword" type="password" autocomplete="current-password" required><label for="newPassword">Nova senha</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required><label for="confirmPassword">Confirme a nova senha</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required><button class="primary-button" type="submit">Atualizar senha <span>♡</span></button></form></div>
+        <div class="panel-card security-card">
+          <div class="form-section-heading"><span>♙</span><div><h3>Nome de usuário</h3><p>Esse nome aparece no painel no lugar do seu e-mail.</p></div></div>
+          <form id="usernameForm" class="stack-form"><label for="profileUsername">Seu nome de usuário</label><input id="profileUsername" maxlength="24" minlength="2" pattern="[A-Za-z0-9_.-]{2,24}" placeholder="SeuUsuario" required><small class="helper-text">Use de 2 a 24 caracteres: letras, números, ponto, hífen ou underline.</small><button class="primary-button" type="submit">Salvar nome de usuário <span>♡</span></button></form>
+          <div class="form-divider"></div>
+          <div class="form-section-heading"><span>🔒</span><div><h3>Alterar senha</h3><p>Use uma senha forte com pelo menos 8 caracteres.</p></div></div>
+          <form id="passwordForm" class="stack-form"><label for="currentPassword">Senha atual</label><input id="currentPassword" type="password" autocomplete="current-password" required><label for="newPassword">Nova senha</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required><label for="confirmPassword">Confirme a nova senha</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required><button class="primary-button" type="submit">Atualizar senha <span>♡</span></button></form>
+        </div>
       </section>
 
       <footer class="admin-footer">Roleta Cute <span>♡</span> feito para espalhar sorte.</footer>
