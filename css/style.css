@@ -321,3 +321,45 @@ body[data-theme="mixed"] .primary-button { background:linear-gradient(135deg,#ea
 }
 
 button.back-link { border: 0; padding: 0; background: transparent; cursor: pointer; font: inherit; }
+
+/* Public draw controls — visible only to the owner and explicitly authorized accounts. */
+.public-draw-controls { max-width:520px; margin:18px auto 0; padding:15px; border:1px solid #f3dce8; border-radius:17px; background:rgba(255,244,249,.88); text-align:left; }
+.public-draw-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+.public-draw-heading strong,.public-winners-heading strong { color:#8c637d; font-size:12px; font-weight:900; }
+.public-draw-heading small { color:#b68ca4; font-size:10px; font-weight:700; }
+.public-draw-controls > label { display:block; margin-bottom:7px; color:#9a7890; font-size:10px; font-weight:800; }
+.public-number-control { margin-bottom:12px; }
+.public-draw-controls .draw-button { margin-top:0; }
+.public-winners-panel { max-width:520px; margin:14px auto 0; padding:14px; border:1px solid #f5e2eb; border-radius:16px; background:#fff9fc; text-align:left; }
+.public-winners-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
+.public-winners-heading span { color:#d982aa; }
+.public-winners-list { display:flex; flex-direction:column; gap:7px; }
+.public-winner-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 10px; border-radius:11px; background:#fff0f6; color:#98657f; font-size:11px; }
+.public-winner-row strong { min-width:0; overflow-wrap:anywhere; }
+.public-redraw-button { flex:0 0 auto; border:0; border-radius:9px; padding:7px 10px; background:#fff; color:#b97896; font-size:10px; font-weight:900; cursor:pointer; }
+.public-redraw-button:disabled { opacity:.5; cursor:wait; }
+.public-link-icon { display:grid; place-items:center; width:25px; height:25px; flex:0 0 25px; overflow:hidden; }
+.public-link-icon img,.admin-link-icon img { display:block; width:100%; height:100%; object-fit:contain; }
+.team-login-link { display:inline-block; margin-left:12px; color:#bd88a4; font-size:10px; text-decoration:underline; text-underline-offset:3px; }
+.winner-name { white-space:pre-line; }
+
+/* Draw maintenance and permission controls. */
+.draw-reset-actions { display:flex; flex-direction:column; gap:8px; margin-top:16px; padding-top:13px; border-top:1px solid #f3e5ec; }
+.draw-reset-actions button { width:100%; }
+.user-access-actions { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+.draw-permission-toggle { display:inline-flex; align-items:center; gap:5px; color:#98768c; font-size:10px; font-weight:900; cursor:pointer; white-space:nowrap; }
+.draw-permission-toggle input { accent-color:#d77fa7; width:15px; height:15px; }
+.admin-link-icon { overflow:hidden; }
+.admin-link-icon img { width:100%; height:100%; object-fit:contain; }
+#linkIconFile { display:block; width:100%; margin-top:8px; color:#ad91a2; font-size:10px; }
+#linkIconImageWrap .file-name { display:block; margin-top:5px; line-height:1.4; }
+#profileUsername { max-width:430px; }
+
+@media (max-width:680px) {
+  .public-draw-controls,.public-winners-panel { padding:12px; }
+  .public-draw-heading { align-items:flex-start; flex-direction:column; gap:3px; }
+  .user-access-actions { flex-wrap:wrap; justify-content:flex-end; }
+  .admin-user-row { align-items:flex-start; flex-wrap:wrap; }
+  .admin-user-row .user-access-actions { width:100%; justify-content:flex-end; }
+  .team-login-link { display:block; margin:8px 0 0; }
+}
