@@ -69,9 +69,7 @@
         ctx.restore();
         return;
       }
-
-      // Anchor is placed inside this sector first. Only the text direction is flipped.
-      // This avoids moving labels from left-side sectors into right-side sectors.
+      
       const labelRadius = radius * 0.68;
       const sliceThickness = labelRadius * slice;
       const fontSize = Math.max(5, Math.min(25, sliceThickness * 0.085));
@@ -90,12 +88,10 @@
       ctx.shadowBlur = 2;
       ctx.font = `900 ${fontSize}px Nunito, sans-serif`;
 
-      // Keep the full participant name; narrow sectors use smaller lettering.
       ctx.fillText(label, 0, 0, maxRadialTextWidth);
       ctx.restore();
     });
 
-    // Clean circular border over all sectors.
     ctx.beginPath();
     ctx.arc(center, center, radius, 0, TAU);
     ctx.strokeStyle = '#fff';
