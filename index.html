@@ -43,6 +43,16 @@
         </div>
         <div class="wheel-caption"><span>✧</span> Boa sorte a todos! <span>✧</span></div>
         <div id="publicWinnerNote" class="public-winner-note" aria-live="polite">Aguardando o próximo sorteio... 💗</div>
+        <section id="publicDrawControls" class="public-draw-controls" hidden aria-label="Controles de sorteio">
+          <div class="public-draw-heading"><strong>Área de sorteio</strong><small id="publicDrawUsername">Controle autorizado</small></div>
+          <label for="publicWinnerCount">Quantidade de ganhadores</label>
+          <div class="number-control public-number-control"><button type="button" id="publicMinusWinner" aria-label="Diminuir ganhadores">−</button><input id="publicWinnerCount" type="number" min="1" value="1"><button type="button" id="publicPlusWinner" aria-label="Aumentar ganhadores">+</button></div>
+          <button id="publicStartDraw" class="primary-button draw-button" type="button">Girar a roleta <span>✧</span></button>
+        </section>
+        <section id="publicWinnersPanel" class="public-winners-panel" hidden aria-label="Ganhadores do sorteio">
+          <div class="public-winners-heading"><strong>Ganhadores sorteados</strong><span>♡</span></div>
+          <div id="publicWinnersList" class="public-winners-list"></div>
+        </section>
       </article>
 
       <aside class="entry-card cute-card">
@@ -64,7 +74,7 @@
       </aside>
     </section>
 
-    <footer class="site-footer"><span>Feito com carinho</span> <b>♡</b> <span id="footerTitle">Roleta Cute</span></footer>
+    <footer class="site-footer"><span>Feito com carinho</span> <b>♡</b> <span id="footerTitle">Roleta Cute</span><a class="team-login-link" href="./login.html">Acesso da equipe</a></footer>
   </main>
 
   <audio id="siteMusic" preload="none" loop></audio>
