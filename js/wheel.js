@@ -15,7 +15,6 @@
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // White outer rim.
     ctx.beginPath();
     ctx.arc(center, center, radius + 9, 0, TAU);
     ctx.fillStyle = '#fff';
@@ -47,7 +46,6 @@
       const end = start + slice;
       const middle = start + slice / 2;
 
-      // One exact sector for each participant.
       ctx.beginPath();
       ctx.moveTo(center, center);
       ctx.arc(center, center, radius, start, end);
