@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffe8f2">
+  <title>Acesso ao painel · Roleta Cute</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="login-page">
+  <main class="login-wrap">
+    <a class="brand login-brand" href="./index.html"><span class="brand-bow">🎀</span><span>Roleta Cute</span></a>
+    <section class="login-card cute-card">
+      <div class="login-icon">🔐</div>
+      <p class="eyebrow" id="loginEyebrow">ÁREA RESTRITA</p>
+      <h1 id="loginTitle">Que bom te ver!</h1>
+      <p id="loginDescription" class="muted-copy">Entre com sua conta para acessar o painel.</p>
+      <form id="loginForm" class="stack-form">
+        <label for="username">E-mail</label>
+        <input id="username" name="email" type="email" autocomplete="email" placeholder="seuemail@exemplo.com" required>
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" minlength="8" autocomplete="current-password" placeholder="Sua senha" required>
+        <button id="loginButton" class="primary-button" type="submit">Entrar no painel <span>♡</span></button>
+      </form>
+      <p id="loginMessage" class="form-message" role="status"></p>
+      <button id="toggleSignup" class="back-link" type="button">Criar uma conta autorizada</button>
+      <a class="back-link" href="./index.html">← Voltar para a roleta</a>
+    </section>
+    <p class="login-footnote">Este espaço é reservado para pessoas autorizadas. ♡</p>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./js/supabase-config.js"></script>
+  <script src="./js/login.js"></script>
+</body>
+</html>

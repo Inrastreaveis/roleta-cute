@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffe8f2">
+  <meta name="description" content="Entre na Roleta Cute e participe do sorteio.">
+  <title>Roleta Cute 🎀</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="public-page">
+  <div class="page-sparkles" aria-hidden="true"><span>✦</span><span>♡</span><span>✧</span><span>♡</span><span>✦</span></div>
+  <header class="topbar">
+    <a class="brand" href="./index.html" aria-label="Página inicial"><span class="brand-bow">🎀</span><span id="headerTitle">Roleta Cute</span></a>
+    <div class="top-actions">
+      <button id="musicToggle" class="soft-icon-button" type="button" title="Reproduzir ou pausar música" aria-label="Reproduzir ou pausar música">♫</button>
+    </div>
+  </header>
+
+  <main class="public-shell">
+    <section class="hero-section">
+      <div class="hero-badge"><span>♡</span> um cantinho de sorte <span>♡</span></div>
+      <h1 id="siteTitle">Roleta Cute</h1>
+      <p id="siteSubtitle">Entre na roleta e boa sorte! ✨</p>
+      <div class="hero-decor">୨୧　✧　♡　✧　୨୧</div>
+    </section>
+
+    <section id="linksSection" class="links-section" aria-label="Links"></section>
+
+    <section class="game-layout">
+      <article class="wheel-card cute-card">
+        <div class="card-heading">
+          <div><span class="eyebrow">✨ A SUA CHANCE</span><h2>Roleta da sorte</h2></div>
+          <span class="live-pill"><i></i> ao vivo</span>
+        </div>
+        <div class="wheel-stage">
+          <div class="wheel-pointer" aria-hidden="true"><span>♥</span></div>
+          <canvas id="wheelCanvas" width="900" height="900" aria-label="Roleta com os nomes dos participantes"></canvas>
+          <div class="wheel-center" aria-hidden="true">♡</div>
+        </div>
+        <div class="wheel-caption"><span>✧</span> Boa sorte a todos! <span>✧</span></div>
+        <div id="publicWinnerNote" class="public-winner-note" aria-live="polite">Aguardando o próximo sorteio... 💗</div>
+      </article>
+
+      <aside class="entry-card cute-card">
+        <div class="card-heading compact-heading">
+          <div><span class="eyebrow">୨୧ PARTICIPE</span><h2>Entre na roleta</h2></div>
+          <span class="heart-stamp">♡</span>
+        </div>
+        <p class="muted-copy">Digite seu nome e venha tentar a sorte!</p>
+        <form id="joinForm" class="join-form">
+          <label class="sr-only" for="participantName">Seu nome</label>
+          <input id="participantName" name="name" type="text" maxlength="32" placeholder="Como podemos te chamar?" autocomplete="nickname" required>
+          <button class="primary-button" type="submit">Participar <span>♡</span></button>
+        </form>
+        <p id="joinMessage" class="form-message" role="status"></p>
+        <div class="participant-summary"><span>♡</span><strong id="participantCount">0</strong><span>participantes</span></div>
+        <div class="participant-list-heading"><h3>Quem já está participando</h3><span id="participantLiveCount">0</span></div>
+        <div id="publicParticipantList" class="public-participant-list"><p class="empty-state">Seja a primeira pessoa a participar! 🌷</p></div>
+        <p id="joinPaused" class="join-paused" hidden>As inscrições estão pausadas no momento. 💌</p>
+      </aside>
+    </section>
+
+    <footer class="site-footer"><span>Feito com carinho</span> <b>♡</b> <span id="footerTitle">Roleta Cute</span></footer>
+  </main>
+
+  <audio id="siteMusic" preload="none" loop></audio>
+  <div id="winnerModal" class="winner-modal" aria-hidden="true">
+    <div class="winner-backdrop"></div>
+    <div class="winner-dialog" role="dialog" aria-modal="true" aria-labelledby="winnerTitle">
+      <div class="winner-confetti">✧ ♡ ✦ ♡ ✧</div>
+      <div class="winner-crown">👑</div>
+      <p class="eyebrow">TEMOS UM RESULTADO!</p>
+      <h2 id="winnerTitle">Parabéns!</h2>
+      <p id="winnerName" class="winner-name"></p>
+      <p id="winnerSubtext" class="muted-copy">A sorte sorriu para você! 💗</p>
+      <button id="closeWinner" class="primary-button" type="button">Que incrível! <span>♡</span></button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./js/supabase-config.js"></script>
+  <script src="./js/supabase-api.js"></script>
+  <script src="./js/wheel.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

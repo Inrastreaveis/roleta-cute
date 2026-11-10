@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff0f6">
+  <title>Painel · Roleta Cute</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="admin-page">
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <a class="brand sidebar-brand" href="./index.html"><span class="brand-bow">🎀</span><span>Roleta Cute</span></a>
+      <div class="sidebar-caption">SEU ESPAÇO</div>
+      <nav class="admin-nav" aria-label="Navegação do painel">
+        <button class="nav-item active" data-tab="overview"><span>⌂</span> Visão geral</button>
+        <button class="nav-item" data-tab="participants"><span>♡</span> Participantes</button>
+        <button class="nav-item" data-tab="draw"><span>✧</span> Sorteio</button>
+        <button class="nav-item" data-tab="appearance"><span>🎨</span> Aparência</button>
+        <button class="nav-item" data-tab="links"><span>🔗</span> Meus links</button>
+        <button class="nav-item" data-tab="music"><span>♫</span> Música</button>
+        <button class="nav-item" data-tab="access" id="accessNav"><span>♙</span> Permissões</button>
+        <button class="nav-item" data-tab="security"><span>🔒</span> Segurança</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <a href="./index.html" class="view-site-link">↗ Ver meu site</a>
+        <div class="signed-user"><span class="user-avatar">♡</span><div><strong id="sidebarUsername">Conta</strong><small id="sidebarRole">Acesso</small></div></div>
+        <button id="logoutButton" class="logout-button">Sair da conta <span>↗</span></button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar"><div><p class="eyebrow">PAINEL DE CONTROLE</p><h1 id="pageHeading">Visão geral</h1></div><a href="./index.html" class="mobile-site-link">Ver site ↗</a></header>
+      <div id="adminMessage" class="admin-message" role="status"></div>
+
+      <section class="admin-tab active" id="tab-overview">
+        <div class="welcome-banner"><div><span class="eyebrow">OLÁ, <span id="welcomeUser">VOCÊ</span>! ✨</span><h2>Seu cantinho está prontinho.</h2><p>Cuide dos participantes, personalize a página e acompanhe os sorteios.</p></div><div class="welcome-art">🎀<span>♡</span></div></div>
+        <div class="stats-grid">
+          <article class="stat-card"><span class="stat-icon">♡</span><span class="stat-label">Participantes</span><strong id="statParticipants">0</strong><small>na roleta agora</small></article>
+          <article class="stat-card"><span class="stat-icon">🏆</span><span class="stat-label">Sorteios registrados</span><strong id="statDraws">0</strong><small>resultados no histórico</small></article>
+          <article class="stat-card"><span class="stat-icon">🔗</span><span class="stat-label">Links ativos</span><strong id="statLinks">0</strong><small>visíveis no seu site</small></article>
+        </div>
+        <div class="quick-grid">
+          <button class="quick-card" data-goto="participants"><span>♡</span><strong>Gerenciar participantes</strong><small>Adicionar ou remover nomes</small><b>→</b></button>
+          <button class="quick-card" data-goto="draw"><span>✧</span><strong>Fazer um sorteio</strong><small>Escolher quantos ganhadores</small><b>→</b></button>
+          <button class="quick-card" data-goto="appearance"><span>🎨</span><strong>Personalizar meu site</strong><small>Fundo, cores e textos</small><b>→</b></button>
+        </div>
+        <div class="panel-card"><div class="panel-title-row"><div><span class="eyebrow">ATIVIDADE</span><h3>Últimos resultados</h3></div><button class="text-button" data-goto="draw">Ver sorteios →</button></div><div id="overviewHistory" class="history-list"><p class="empty-state">Seus sorteios aparecerão aqui. 🌷</p></div></div>
+      </section>
+
+      <section class="admin-tab" id="tab-participants">
+        <div class="section-intro"><span class="eyebrow">LISTA DA SORTE</span><h2>Participantes</h2><p>Adicione nomes manualmente ou remova quem não deve mais participar.</p></div>
+        <div class="panel-card">
+          <form id="adminAddParticipant" class="inline-add-form"><input id="adminParticipantName" type="text" maxlength="32" placeholder="Digite o nome da pessoa..." required><button class="primary-button" type="submit">Adicionar <span>+</span></button></form>
+          <div class="panel-title-row participant-toolbar"><div><h3>Na roleta <span class="count-chip" id="adminParticipantCount">0</span></h3><small>Os nomes são sincronizados com o site em tempo real.</small></div><button id="clearParticipants" class="danger-text-button" type="button">Limpar lista</button></div>
+          <div id="adminParticipantList" class="admin-participant-list"><p class="empty-state">Ainda não há participantes.</p></div>
+        </div>
+      </section>
+
+      <section class="admin-tab" id="tab-draw">
+        <div class="section-intro"><span class="eyebrow">HORA DA SORTE</span><h2>Sortear ganhadores</h2><p>Escolha quantas pessoas serão sorteadas. Um mesmo nome não sai duas vezes no mesmo sorteio.</p></div>
+        <div class="draw-admin-layout">
+          <div class="panel-card draw-wheel-panel">
+            <div class="card-heading"><div><span class="eyebrow">RODA A SORTE</span><h3>Roleta ao vivo</h3></div><span class="live-pill"><i></i> sincronizada</span></div>
+            <div class="wheel-stage admin-wheel-stage"><div class="wheel-pointer"><span>♥</span></div><canvas id="adminWheelCanvas" width="900" height="900" aria-label="Roleta de sorteio"></canvas><div class="wheel-center">♡</div></div>
+            <p class="wheel-caption">Cada fatia representa uma pessoa participante. ♡</p>
+          </div>
+          <div class="panel-card draw-controls">
+            <span class="eyebrow">CONFIGURAR SORTEIO</span><h3>Quantas pessoas vão ganhar?</h3>
+            <label for="winnerCount">Quantidade de ganhadores</label>
+            <div class="number-control"><button type="button" id="minusWinner">−</button><input id="winnerCount" type="number" min="1" value="1"><button type="button" id="plusWinner">+</button></div>
+            <p class="helper-text">Disponíveis: <strong id="drawAvailable">0</strong> participantes.</p>
+            <button id="startDraw" class="primary-button draw-button" type="button">Girar a roleta <span>✧</span></button>
+            <div id="drawStatus" class="draw-status">Pronto para sortear? Boa sorte! 💗</div>
+            <div id="currentWinners" class="current-winners"></div>
+          </div>
+        </div>
+        <div class="panel-card history-panel"><div class="panel-title-row"><div><span class="eyebrow">REGISTROS</span><h3>Histórico de sorteios</h3></div></div><div id="drawHistory" class="history-list"><p class="empty-state">Nenhum sorteio realizado ainda.</p></div></div>
+      </section>
+
+      <section class="admin-tab" id="tab-appearance">
+        <div class="section-intro"><span class="eyebrow">DEIXE COM A SUA CARA</span><h2>Aparência do site</h2><p>Altere os textos, o tema e o plano de fundo sem precisar mexer no código.</p></div>
+        <div class="panel-card settings-form">
+          <div class="form-section-heading"><span>✿</span><div><h3>Textos do site</h3><p>O que os visitantes vão ver ao entrar.</p></div></div>
+          <label for="settingTitle">Nome do site</label><input id="settingTitle" maxlength="50" placeholder="Roleta Cute">
+          <label for="settingSubtitle">Mensagem abaixo do título</label><input id="settingSubtitle" maxlength="120" placeholder="Entre na roleta e boa sorte! ✨">
+          <div class="form-divider"></div>
+          <div class="form-section-heading"><span>🎨</span><div><h3>Paleta de cores</h3><p>Escolha a atmosfera do seu cantinho.</p></div></div>
+          <div class="theme-options">
+            <label class="theme-option"><input type="radio" name="theme" value="pink"><span class="theme-swatch theme-pink"><i></i><i></i><i></i></span><strong>Rosa pastel</strong></label>
+            <label class="theme-option"><input type="radio" name="theme" value="lavender"><span class="theme-swatch theme-lavender"><i></i><i></i><i></i></span><strong>Lilás kawaii</strong></label>
+            <label class="theme-option"><input type="radio" name="theme" value="mixed"><span class="theme-swatch theme-mixed"><i></i><i></i><i></i></span><strong>Pastel colorido</strong></label>
+          </div>
+          <div class="form-divider"></div>
+          <div class="form-section-heading"><span>🖼️</span><div><h3>Plano de fundo</h3><p>Use uma imagem do computador ou um link direto.</p></div></div>
+          <div class="background-choice"><label><input type="radio" name="backgroundType" value="gradient"> Fundo pastel padrão</label><label><input type="radio" name="backgroundType" value="url"> Link de imagem</label><label><input type="radio" name="backgroundType" value="upload"> Imagem enviada</label></div>
+          <div id="backgroundUrlWrap"><label for="backgroundUrl">URL da imagem</label><input id="backgroundUrl" type="url" placeholder="https://exemplo.com/imagem.jpg"></div>
+          <div class="upload-row"><label class="upload-button" for="backgroundFile">Escolher imagem do computador</label><input id="backgroundFile" type="file" accept="image/jpeg,image/png,image/webp"><span id="backgroundUploadName" class="file-name">JPG, PNG ou WEBP · até 12 MB</span></div>
+          <div class="form-divider"></div>
+          <div class="form-section-heading"><span>💌</span><div><h3>Inscrições</h3><p>Você pode pausar e reabrir a entrada de participantes.</p></div></div>
+          <label class="switch-row"><span><strong>Permitir novas inscrições</strong><small>Quando desligado, ninguém consegue entrar pelo site.</small></span><input id="allowJoin" type="checkbox"><i></i></label>
+          <div class="form-actions"><button id="saveAppearance" class="primary-button" type="button">Salvar alterações <span>♡</span></button></div>
+        </div>
+      </section>
+
+      <section class="admin-tab" id="tab-links">
+        <div class="section-intro"><span class="eyebrow">SEUS CANTINHOS FAVORITOS</span><h2>Meus links</h2><p>Adicione Live Pix, redes sociais, comunidade, loja e quantos outros links quiser.</p></div>
+        <div class="panel-card">
+          <form id="linkForm" class="link-editor-form">
+            <div class="form-section-heading"><span>🔗</span><div><h3 id="linkFormTitle">Adicionar novo link</h3><p>Escolha um nome, ícone, cor e endereço.</p></div></div>
+            <input id="editingLinkId" type="hidden">
+            <div class="link-form-grid"><div><label for="linkLabel">Nome do link</label><input id="linkLabel" maxlength="40" placeholder="Ex.: Meu Live Pix" required></div><div><label for="linkIcon">Ícone ou emoji</label><input id="linkIcon" maxlength="8" value="💗" placeholder="💗"></div><div class="link-url-field"><label for="linkUrl">Endereço (URL)</label><input id="linkUrl" type="url" placeholder="https://..." required></div><div><label for="linkColor">Cor do botão</label><input id="linkColor" type="color" value="#f3a6c8"></div></div>
+            <div class="form-actions"><button id="cancelLinkEdit" class="secondary-button" type="button" hidden>Cancelar edição</button><button class="primary-button" type="submit" id="saveLinkButton">Adicionar link <span>+</span></button></div>
+          </form>
+          <div class="form-divider"></div>
+          <div class="panel-title-row"><div><h3>Links cadastrados</h3><small>Os links ativos aparecem na página principal.</small></div></div>
+          <div id="adminLinksList" class="admin-links-list"><p class="empty-state">Você ainda não adicionou links.</p></div>
+        </div>
+      </section>
+
+      <section class="admin-tab" id="tab-music">
+        <div class="section-intro"><span class="eyebrow">TRILHA DO SEU CANTINHO</span><h2>Música do site</h2><p>Envie uma música do seu computador. Os visitantes poderão tocar ou pausar.</p></div>
+        <div class="panel-card music-settings-card">
+          <div class="music-art">♫<span>♡</span><i>✧</i></div>
+          <div class="music-info"><span class="eyebrow">MÚSICA ATUAL</span><h3 id="currentMusicTitle">Nenhuma música enviada</h3><p id="currentMusicDescription">Envie um arquivo de áudio para colocar música no seu site.</p></div>
+          <div class="music-upload-area"><label class="upload-button" for="musicFile">Escolher música do computador</label><input id="musicFile" type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4,.mp3,.ogg,.wav,.m4a"><span class="file-name" id="musicUploadName">MP3, OGG, WAV ou M4A · até 30 MB</span></div>
+          <label class="switch-row"><span><strong>Disponibilizar música no site</strong><small>O visitante pode iniciar e pausar a reprodução.</small></span><input id="musicEnabled" type="checkbox"><i></i></label>
+          <div class="form-actions"><button id="saveMusic" class="primary-button" type="button">Salvar música <span>♫</span></button><button id="removeMusic" class="danger-outline-button" type="button">Remover música</button></div>
+          <p class="helper-text">Observação: alguns navegadores bloqueiam reprodução automática. A música começa quando o visitante toca no botão ♫.</p>
+        </div>
+      </section>
+
+      <section class="admin-tab" id="tab-access">
+        <div class="section-intro"><span class="eyebrow">SÓ QUEM VOCÊ ESCOLHER</span><h2>Permissões de acesso</h2><p>Autorize contas individuais de pessoas que poderão ajudar a cuidar da roleta.</p></div>
+        <div class="panel-card" id="userManagementPanel">
+          <div class="form-section-heading"><span>♙</span><div><h3>Adicionar pessoa autorizada</h3><p>A pessoa cria sua própria conta e você libera o acesso pelo e-mail.</p></div></div>
+          <form id="userForm" class="user-form"><div><label for="newUsername">E-mail da conta</label><input id="newUsername" type="email" placeholder="email@exemplo.com" required></div><div><label for="newUserRole">Permissão</label><select id="newUserRole"><option value="moderator">Moderador — adicionar e remover nomes</option><option value="admin">Administrador — gerenciar site e participantes</option></select></div><button class="primary-button" type="submit">Autorizar conta <span>+</span></button></form><p class="helper-text">A pessoa precisa criar uma conta pela página de acesso antes. Depois informe aqui o mesmo e-mail para liberar as permissões.</p>
+          <div class="form-divider"></div><div class="panel-title-row"><div><h3>Pessoas autorizadas</h3><small>Você pode remover o acesso a qualquer momento.</small></div></div><div id="adminUsersList" class="admin-users-list"></div>
+        </div>
+        <div class="permission-explainer"><p><strong>Proprietário:</strong> você. Controle total, inclusive das permissões.</p><p><strong>Administrador:</strong> pode gerenciar participantes, sorteios, aparência, links e música.</p><p><strong>Moderador:</strong> pode somente adicionar e remover participantes.</p></div>
+      </section>
+
+      <section class="admin-tab" id="tab-security">
+        <div class="section-intro"><span class="eyebrow">PROTEJA SEU PAINEL</span><h2>Segurança da conta</h2><p>Altere sua senha de acesso sempre que desejar.</p></div>
+        <div class="panel-card security-card"><div class="form-section-heading"><span>🔒</span><div><h3>Alterar senha</h3><p>Use uma senha forte com pelo menos 8 caracteres.</p></div></div><form id="passwordForm" class="stack-form"><label for="currentPassword">Senha atual</label><input id="currentPassword" type="password" autocomplete="current-password" required><label for="newPassword">Nova senha</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required><label for="confirmPassword">Confirme a nova senha</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required><button class="primary-button" type="submit">Atualizar senha <span>♡</span></button></form></div>
+      </section>
+
+      <footer class="admin-footer">Roleta Cute <span>♡</span> feito para espalhar sorte.</footer>
+    </main>
+  </div>
+
+  <div id="adminWinnerModal" class="winner-modal" aria-hidden="true"><div class="winner-backdrop"></div><div class="winner-dialog" role="dialog" aria-modal="true"><div class="winner-confetti">✧ ♡ ✦ ♡ ✧</div><div class="winner-crown">👑</div><p class="eyebrow" id="adminWinnerEyebrow">TEMOS UM RESULTADO!</p><h2>Parabéns!</h2><p id="adminWinnerName" class="winner-name"></p><p class="muted-copy" id="adminWinnerSubtext">A sorte sorriu! 💗</p><button id="closeAdminWinner" class="primary-button" type="button">Continuar <span>♡</span></button></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./js/supabase-config.js"></script><script src="./js/supabase-api.js"></script><script src="./js/wheel.js"></script><script src="./js/admin.js"></script>
+</body>
+</html>
