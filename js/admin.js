@@ -18,6 +18,7 @@
 
   function setTab(tab) {
     if (tab === 'access' && adminState.user?.role !== 'owner') return;
+    if (tab === 'draw' && !(adminState.user?.role === 'owner' || adminState.user?.can_draw === true)) return;
     activeTab = tab;
     document.querySelectorAll('.admin-tab').forEach(section => section.classList.toggle('active', section.id === `tab-${tab}`));
     document.querySelectorAll('.nav-item').forEach(button => button.classList.toggle('active', button.dataset.tab === tab));
@@ -72,7 +73,9 @@
     if (!links.length) { const empty = document.createElement('p'); empty.className = 'empty-state'; empty.textContent = 'Você ainda não adicionou links.'; list.append(empty); return; }
     links.forEach(link => {
       const row = document.createElement('div'); row.className = 'admin-link-row';
-      const icon = document.createElement('span'); icon.className = 'admin-link-icon'; icon.style.background = `${link.color || '#f3a6c8'}25`; icon.textContent = link.icon || '💗';
+      const icon = document.createElement('span'); icon.className = 'admin-link-icon'; icon.style.background = `${link.color || '#f3a6c8'}25`;
+      if (link.icon_type === 'image' && link.icon_image_url) { const image = document.createElement('img'); image.src = link.icon_image_url; image.alt = ''; image.loading = 'lazy'; icon.append(image); }
+      else icon.textContent = link.icon || '💗';
       const main = document.createElement('div'); main.className = 'admin-link-main';
       const title = document.createElement('strong'); title.textContent = link.label;
       const url = document.createElement('small'); url.textContent = link.url;
@@ -128,9 +131,23 @@
       const badge = document.createElement('span'); badge.className = 'role-chip'; badge.textContent = role.textContent;
       row.append(meta, badge);
       if (user.role !== 'owner' && user.role !== 'pending') {
+        const actions = document.createElement('div'); actions.className = 'user-access-actions';
+        const drawLabel = document.createElement('label'); drawLabel.className = 'draw-permission-toggle';
+        const drawCheckbox = document.createElement('input'); drawCheckbox.type = 'checkbox'; drawCheckbox.checked = user.can_draw === true;
+        drawCheckbox.setAttribute('aria-label', `Permitir que ${user.username} gire a roleta`);
+        drawCheckbox.addEventListener('change', async () => {
+          drawCheckbox.disabled = true;
+          try {
+            await api(`/api/admin/users/${user.id}/draw-permission`, { method: 'PUT', body: JSON.stringify({ can_draw: drawCheckbox.checked }) });
+            await refresh(); message(drawCheckbox.checked ? `Permissão para girar liberada para ${user.username}.` : `Permissão de sorteio removida de ${user.username}.`);
+          } catch (e) { drawCheckbox.checked = !drawCheckbox.checked; message(e.message, true); }
+          finally { drawCheckbox.disabled = false; }
+        });
+        const drawText = document.createElement('span'); drawText.textContent = 'Pode girar';
+        drawLabel.append(drawCheckbox, drawText);
         const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Revogar';
         remove.addEventListener('click', async () => { if (!confirm(`Revogar o acesso de ${user.username}?`)) return; try { await api(`/api/admin/users/${user.id}`, { method: 'DELETE' }); await refresh(); message('Acesso revogado.'); } catch (e) { message(e.message, true); } });
-        row.append(remove);
+        actions.append(drawLabel, remove); row.append(actions);
       }
       list.append(row);
     });
@@ -175,18 +192,21 @@
   function renderAll() {
     const user = adminState.user || {};
     $('sidebarUsername').textContent = user.username || 'Conta';
+    $('profileUsername').value = user.username || ''; 
     $('welcomeUser').textContent = (user.username || 'VOCÊ').toUpperCase();
     const roleLabels = { owner: 'Proprietário', admin: 'Administrador', moderator: 'Moderador', pending: 'Aguardando autorização' };
     $('sidebarRole').textContent = roleLabels[user.role] || 'Acesso';
     $('accessNav').hidden = user.role !== 'owner';
     const moderatorOnly = user.role === 'moderator';
+    const drawAllowed = user.role === 'owner' || user.can_draw === true;
     $('clearParticipants').hidden = moderatorOnly;
     ['draw', 'appearance', 'links', 'music'].forEach(tab => {
+      const hide = moderatorOnly || (tab === 'draw' && !drawAllowed);
       const nav = document.querySelector(`.nav-item[data-tab="${tab}"]`);
-      if (nav) nav.hidden = moderatorOnly;
-      document.querySelectorAll(`[data-goto="${tab}"]`).forEach(card => { card.hidden = moderatorOnly; });
+      if (nav) nav.hidden = hide;
+      document.querySelectorAll(`[data-goto="${tab}"]`).forEach(card => { card.hidden = hide; });
     });
-    if ((user.role !== 'owner' && activeTab === 'access') || (moderatorOnly && ['draw', 'appearance', 'links', 'music'].includes(activeTab))) setTab('overview');
+    if ((user.role !== 'owner' && activeTab === 'access') || (moderatorOnly && ['draw', 'appearance', 'links', 'music'].includes(activeTab)) || (!drawAllowed && activeTab === 'draw')) setTab('overview');
     renderParticipants(); renderLinks(); renderHistory(); renderSettings(); renderUsers(); hydrateLatestWinners();
   }
 
@@ -215,6 +235,29 @@
     if (!confirm('Tem certeza de que deseja limpar todos os participantes? O histórico dos sorteios será mantido.')) return;
     try { await api('/api/admin/participants', { method: 'DELETE' }); await refresh(); message('A lista de participantes foi limpa.'); }
     catch (error) { message(error.message, true); }
+  });
+
+  async function recreateDraw(clearParticipants) {
+    const confirmation = clearParticipants
+      ? 'Recriar o sorteio e remover TODOS os participantes? Essa ação não pode ser desfeita.'
+      : 'Recriar o sorteio e manter todos os participantes inscritos? O histórico de ganhadores será apagado.';
+    if (!confirm(confirmation)) return;
+    try {
+      await api('/api/admin/draw/reset', { method: 'POST', body: JSON.stringify({ clear_participants: clearParticipants }) });
+      currentWinners = []; renderWinners();
+      await refresh();
+      message(clearParticipants ? 'Sorteio recriado e participantes removidos.' : 'Sorteio recriado. Os participantes foram mantidos.');
+    } catch (error) { message(error.message, true); }
+  }
+  $('recreateKeepParticipants').addEventListener('click', () => recreateDraw(false));
+  $('recreateClearParticipants').addEventListener('click', () => recreateDraw(true));
+  $('clearDrawHistory').addEventListener('click', async () => {
+    if (!confirm('Apagar todo o histórico de ganhadores? Os participantes continuarão inscritos.')) return;
+    try {
+      await api('/api/admin/draw/history', { method: 'DELETE' });
+      currentWinners = []; renderWinners(); await refresh();
+      message('Histórico de ganhadores apagado.');
+    } catch (error) { message(error.message, true); }
   });
 
   $('minusWinner').addEventListener('click', () => { $('winnerCount').value = String(Math.max(1, Number($('winnerCount').value || 1) - 1)); });
@@ -314,22 +357,50 @@
     finally { button.disabled = false; }
   });
 
+  function updateLinkIconMode() {
+    const imageMode = $('linkIconType').value === 'image';
+    $('linkIconEmojiWrap').hidden = imageMode;
+    $('linkIconImageWrap').hidden = !imageMode;
+  }
   function resetLinkForm() {
     $('linkForm').reset(); $('editingLinkId').value = ''; $('linkIcon').value = '💗'; $('linkColor').value = '#f3a6c8';
+    $('linkIconType').value = 'emoji'; $('linkIconFile').value = ''; $('linkIconFileName').textContent = 'PNG, JPG ou WEBP · até 3 MB'; $('linkExistingIconUrl').value = '';
+    updateLinkIconMode();
     $('linkFormTitle').textContent = 'Adicionar novo link'; $('saveLinkButton').innerHTML = 'Adicionar link <span>+</span>'; $('cancelLinkEdit').hidden = true;
   }
   function editLink(link) {
     setTab('links');
     $('editingLinkId').value = String(link.id); $('linkLabel').value = link.label; $('linkUrl').value = link.url;
-    $('linkIcon').value = link.icon || '💗'; $('linkColor').value = link.color || '#f3a6c8';
+    $('linkIconType').value = link.icon_type || 'emoji'; $('linkIcon').value = link.icon || '💗'; $('linkColor').value = link.color || '#f3a6c8';
+    $('linkExistingIconUrl').value = link.icon_image_url || '';
+    $('linkIconFile').value = '';
+    $('linkIconFileName').textContent = link.icon_image_url ? 'Imagem atual salva · escolha outra para substituir' : 'PNG, JPG ou WEBP · até 3 MB';
+    updateLinkIconMode();
     $('linkFormTitle').textContent = 'Editar link'; $('saveLinkButton').innerHTML = 'Salvar link <span>♡</span>'; $('cancelLinkEdit').hidden = false;
     $('linkLabel').focus();
   }
+  $('linkIconType').addEventListener('change', updateLinkIconMode);
+  $('linkIconFile').addEventListener('change', () => { $('linkIconFileName').textContent = $('linkIconFile').files[0]?.name || 'PNG, JPG ou WEBP · até 3 MB'; });
   $('cancelLinkEdit').addEventListener('click', resetLinkForm);
   $('linkForm').addEventListener('submit', async event => {
     event.preventDefault();
     const id = $('editingLinkId').value;
-    const payload = { label: $('linkLabel').value.trim(), url: $('linkUrl').value.trim(), icon: $('linkIcon').value.trim(), color: $('linkColor').value };
+    const iconType = $('linkIconType').value;
+    let iconImageUrl = null;
+    if (iconType === 'image') {
+      const file = $('linkIconFile').files[0];
+      if (file) {
+        const form = new FormData(); form.append('file', file);
+        try { const upload = await api('/api/admin/upload/link-icon', { method: 'POST', body: form }); iconImageUrl = upload.path; }
+        catch (error) { message(error.message, true); return; }
+      } else iconImageUrl = $('linkExistingIconUrl').value || null;
+      if (!iconImageUrl) { message('Escolha uma imagem para o ícone.', true); return; }
+    }
+    const payload = {
+      label: $('linkLabel').value.trim(), url: $('linkUrl').value.trim(),
+      icon: iconType === 'emoji' ? ($('linkIcon').value.trim() || '💗') : '💗',
+      icon_type: iconType, icon_image_url: iconImageUrl, color: $('linkColor').value
+    };
     try {
       await api(id ? `/api/admin/links/${id}` : '/api/admin/links', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) });
       resetLinkForm(); await refresh(); message(id ? 'Link atualizado!' : 'Link adicionado ao site!');
@@ -364,6 +435,18 @@
     catch (error) { message(error.message, true); }
   });
 
+  $('usernameForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const username = $('profileUsername').value.trim();
+    try {
+      const data = await api('/api/admin/profile/username', { method: 'PUT', body: JSON.stringify({ username }) });
+      adminState.user.username = data.username;
+      $('sidebarUsername').textContent = data.username;
+      $('welcomeUser').textContent = data.username.toUpperCase();
+      message('Nome de usuário atualizado.');
+    } catch (error) { message(error.message, true); }
+  });
+
   $('passwordForm').addEventListener('submit', async event => {
     event.preventDefault();
     const current = $('currentPassword').value;
@@ -381,6 +464,7 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'participants' }, () => refresh().catch(() => {}))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, () => refresh().catch(() => {}))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'links' }, () => refresh().catch(() => {}))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => refresh().catch(() => {}))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'draws' }, () => refreshHistoryOnly().catch(() => {}))
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'draw_events' }, payload => {
         const event = payload.new?.payload || {};
@@ -393,6 +477,14 @@
           currentWinners = currentWinners.map(item => item.id === event.oldDrawId ? event.winner : item);
           renderWinners();
           animateAdminWinners([event.winner].filter(Boolean), true, event.participants || []);
+        }
+        if (payload.new?.event_type === 'draw_reset') {
+          currentWinners = [];
+          renderWinners();
+          $('drawStatus').textContent = event.clearParticipants
+            ? 'Sorteio recriado e lista de participantes limpa.'
+            : 'Sorteio recriado. Participantes mantidos.';
+          refresh().catch(() => {});
         }
       })
       .subscribe();
