@@ -1,6 +1,3 @@
--- ROLETA CUTE — Supabase schema
--- Execute this file once in Supabase > SQL Editor > New query.
-
 create extension if not exists pgcrypto;
 
 create table if not exists public.profiles (
@@ -17,7 +14,6 @@ create table if not exists public.participants (
   created_at timestamptz not null default now()
 );
 
--- Device identifiers are deliberately private; they are never exposed by the public participants query.
 create table if not exists public.device_registrations (
   device_hash text primary key,
   participant_id uuid not null unique references public.participants(id) on delete cascade,
@@ -52,7 +48,6 @@ create table if not exists public.draws (
 create index if not exists draws_batch_idx on public.draws(batch_id);
 create index if not exists draws_created_idx on public.draws(created_at desc);
 
--- Public event feed is used only to animate a draw on every open browser.
 create table if not exists public.draw_events (
   id bigint generated always as identity primary key,
   event_type text not null check (event_type in ('draw_started','draw_replacement')),
@@ -81,7 +76,6 @@ as $$
 declare
   owner_already_exists boolean;
 begin
-  -- Serialize first-account creation so only one account can become owner.
   perform pg_advisory_xact_lock(73190421);
   select exists(select 1 from public.profiles where role = 'owner') into owner_already_exists;
   insert into public.profiles(id,email,role)
@@ -352,7 +346,6 @@ create policy draws_admin_read on public.draws for select to authenticated using
 drop policy if exists draw_events_public_read on public.draw_events;
 create policy draw_events_public_read on public.draw_events for select to anon,authenticated using (true);
 
--- Public asset bucket. Upload and deletion remain restricted to owner/admin.
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 values ('roleta-assets','roleta-assets',true,31457280,array['image/jpeg','image/png','image/webp','audio/mpeg','audio/ogg','audio/wav','audio/mp4','audio/x-m4a'])
 on conflict (id) do update set public=true,file_size_limit=31457280,allowed_mime_types=excluded.allowed_mime_types;
@@ -366,7 +359,6 @@ create policy roleta_assets_admin_update on storage.objects for update to authen
 drop policy if exists roleta_assets_admin_delete on storage.objects;
 create policy roleta_assets_admin_delete on storage.objects for delete to authenticated using (bucket_id='roleta-assets' and public.has_role(array['owner','admin']));
 
--- RPC permissions
 revoke all on function public.owner_exists() from public;
 grant execute on function public.owner_exists() to anon,authenticated;
 revoke all on function public.device_registration_status(text) from public;
@@ -393,7 +385,6 @@ grant select on public.participants,public.site_settings,public.links,public.dra
 grant select on public.profiles,public.draws to authenticated;
 grant insert,update,delete on public.site_settings,public.links to authenticated;
 
--- Enable Realtime for public state and draw animations (safe to re-run).
 do $$
 begin
   if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='participants') then
