@@ -5,6 +5,8 @@
   let state = { participants: [], settings: {}, links: [], drawAccess: { authorized: false }, currentWinners: [] };
   let spinning = false;
   let deviceRegistration = { checked: false, registered: false, participant: null };
+  let musicPlaylist = [];
+  let musicIndex = 0;
 
   function deviceToken() {
     let token = localStorage.getItem('roleta_cute_device_token');
@@ -137,13 +139,81 @@
     renderParticipants(state.participants || []);
     renderDrawControls();
     renderJoinAvailability();
-    if (settings.music_file) {
-      const audio = $('siteMusic');
-      if (audio.getAttribute('src') !== settings.music_file) { audio.src = settings.music_file; audio.load(); }
-      $('musicToggle').hidden = !settings.music_enabled;
-    } else {
-      $('siteMusic').removeAttribute('src'); $('musicToggle').hidden = true; $('musicToggle').classList.remove('playing');
+    applyMusicSettings(settings);
+  }
+
+  function normalizedPlaylist(settings) {
+    if (Array.isArray(settings?.music_playlist) && settings.music_playlist.length) return settings.music_playlist.filter(track => track && track.url);
+    if (settings?.music_file) return [{ url: settings.music_file, title: settings.music_title || 'Música enviada' }];
+    return [];
+  }
+
+  function updateMusicPlayerDisplay() {
+    const audio = $('siteMusic');
+    const track = musicPlaylist[musicIndex];
+    $('musicTrackTitle').textContent = track?.title || 'Nenhuma música';
+    $('musicTrackPosition').textContent = track ? `Faixa ${musicIndex + 1} de ${musicPlaylist.length}` : '';
+    $('musicToggle').textContent = audio.paused ? '▶' : 'Ⅱ';
+    $('musicToggle').setAttribute('aria-label', audio.paused ? 'Reproduzir música' : 'Pausar música');
+    $('musicToggle').title = audio.paused ? 'Reproduzir' : 'Pausar';
+    $('musicToggle').classList.toggle('playing', !audio.paused);
+    $('musicPrevious').disabled = musicPlaylist.length === 0;
+    $('musicNext').disabled = musicPlaylist.length === 0;
+  }
+
+  function loadMusicTrack(index, autoplay = false) {
+    if (!musicPlaylist.length) return;
+    musicIndex = (index + musicPlaylist.length) % musicPlaylist.length;
+    const track = musicPlaylist[musicIndex];
+    const audio = $('siteMusic');
+    if (audio.getAttribute('src') !== track.url) {
+      audio.src = track.url;
+      audio.load();
     }
+    updateMusicPlayerDisplay();
+    if (autoplay) audio.play().catch(() => { $('musicTrackPosition').textContent = 'Toque em reproduzir para iniciar'; });
+  }
+
+  function applyMusicSettings(settings) {
+    const audio = $('siteMusic');
+    const nextPlaylist = normalizedPlaylist(settings);
+    const currentUrl = musicPlaylist[musicIndex]?.url;
+    const nextIndex = currentUrl ? nextPlaylist.findIndex(track => track.url === currentUrl) : -1;
+    musicPlaylist = nextPlaylist;
+    musicIndex = nextIndex >= 0 ? nextIndex : 0;
+    const enabled = settings.music_enabled === true || settings.music_enabled === '1' || settings.music_enabled === 'true';
+    $('musicPlayer').hidden = !enabled || !musicPlaylist.length;
+    document.body.classList.toggle('has-music-player', enabled && musicPlaylist.length > 0);
+
+    if (!musicPlaylist.length) {
+      audio.pause(); audio.removeAttribute('src'); audio.load();
+      updateMusicPlayerDisplay();
+      return;
+    }
+    const track = musicPlaylist[musicIndex];
+    if (audio.getAttribute('src') !== track.url) {
+      audio.pause(); audio.src = track.url; audio.load();
+    }
+    if (!enabled) audio.pause();
+    updateMusicPlayerDisplay();
+  }
+
+  async function toggleMusicPlayback() {
+    const audio = $('siteMusic');
+    if (!musicPlaylist.length) return;
+    if (audio.paused) {
+      try { await audio.play(); }
+      catch { $('musicTrackPosition').textContent = 'Toque novamente para iniciar a música'; }
+    } else audio.pause();
+    updateMusicPlayerDisplay();
+  }
+
+  function nextMusic() { if (musicPlaylist.length) loadMusicTrack(musicIndex + 1, true); }
+  function previousMusic() {
+    const audio = $('siteMusic');
+    if (!musicPlaylist.length) return;
+    if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+    loadMusicTrack(musicIndex - 1, true);
   }
 
   async function loadState() {
@@ -249,13 +319,14 @@
     } finally { button.disabled = false; button.innerHTML = 'Participar <span>♡</span>'; }
   });
 
-  $('musicToggle').addEventListener('click', async () => {
-    const audio = $('siteMusic'); if (!audio.src) return;
-    if (audio.paused) { try { await audio.play(); $('musicToggle').classList.add('playing'); } catch { $('publicWinnerNote').textContent = 'Toque novamente para iniciar a música. ♫'; } }
-    else { audio.pause(); $('musicToggle').classList.remove('playing'); }
-  });
-  $('siteMusic').addEventListener('pause', () => $('musicToggle').classList.remove('playing'));
-  $('siteMusic').addEventListener('play', () => $('musicToggle').classList.add('playing'));
+  $('musicToggle').addEventListener('click', toggleMusicPlayback);
+  $('musicPrevious').addEventListener('click', previousMusic);
+  $('musicNext').addEventListener('click', nextMusic);
+  $('musicVolume').addEventListener('input', () => { $('siteMusic').volume = Number($('musicVolume').value); });
+  $('siteMusic').volume = Number($('musicVolume').value);
+  $('siteMusic').addEventListener('pause', updateMusicPlayerDisplay);
+  $('siteMusic').addEventListener('play', updateMusicPlayerDisplay);
+  $('siteMusic').addEventListener('ended', nextMusic);
 
   sb.channel('roleta-cute-public-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'participants' }, () => { loadState(); loadDeviceRegistration(); })
