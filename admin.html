@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/style.css?v=20261110-v4">
 </head>
 <body class="admin-page">
   <div class="admin-layout">
@@ -126,14 +126,15 @@
       </section>
 
       <section class="admin-tab" id="tab-music">
-        <div class="section-intro"><span class="eyebrow">TRILHA DO SEU CANTINHO</span><h2>Música do site</h2><p>Envie uma música do seu computador. Os visitantes poderão tocar ou pausar.</p></div>
+        <div class="section-intro"><span class="eyebrow">TRILHA DO SEU CANTINHO</span><h2>Música do site</h2><p>Monte uma playlist. Os visitantes poderão voltar, pausar, avançar e controlar o volume.</p></div>
         <div class="panel-card music-settings-card">
           <div class="music-art">♫<span>♡</span><i>✧</i></div>
-          <div class="music-info"><span class="eyebrow">MÚSICA ATUAL</span><h3 id="currentMusicTitle">Nenhuma música enviada</h3><p id="currentMusicDescription">Envie um arquivo de áudio para colocar música no seu site.</p></div>
-          <div class="music-upload-area"><label class="upload-button" for="musicFile">Escolher música do computador</label><input id="musicFile" type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4,.mp3,.ogg,.wav,.m4a"><span class="file-name" id="musicUploadName">MP3, OGG, WAV ou M4A · até 30 MB</span></div>
-          <label class="switch-row"><span><strong>Disponibilizar música no site</strong><small>O visitante pode iniciar e pausar a reprodução.</small></span><input id="musicEnabled" type="checkbox"><i></i></label>
-          <div class="form-actions"><button id="saveMusic" class="primary-button" type="button">Salvar música <span>♫</span></button><button id="removeMusic" class="danger-outline-button" type="button">Remover música</button></div>
-          <p class="helper-text">Observação: alguns navegadores bloqueiam reprodução automática. A música começa quando o visitante toca no botão ♫.</p>
+          <div class="music-info"><span class="eyebrow">SUA PLAYLIST</span><h3 id="currentMusicTitle">Nenhuma música enviada</h3><p id="currentMusicDescription">Adicione uma ou mais músicas para tocar no site.</p></div>
+          <div class="music-upload-area"><label class="upload-button" for="musicFile">Escolher músicas do computador</label><input id="musicFile" type="file" multiple accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4,.mp3,.ogg,.wav,.m4a"><span class="file-name" id="musicUploadName">Selecione vários arquivos · até 30 MB cada</span></div>
+          <div class="music-playlist-wrap"><div class="panel-title-row"><div><h3>Músicas cadastradas</h3><small>A ordem abaixo será a ordem de reprodução.</small></div></div><div id="adminMusicPlaylist" class="admin-music-playlist"><p class="empty-state">Sua playlist está vazia.</p></div></div>
+          <label class="switch-row"><span><strong>Disponibilizar música no site</strong><small>Visitantes podem voltar, pausar, avançar e ajustar o volume.</small></span><input id="musicEnabled" type="checkbox"><i></i></label>
+          <div class="form-actions"><button id="saveMusic" class="primary-button" type="button">Adicionar à playlist <span>♫</span></button><button id="removeMusic" class="danger-outline-button" type="button">Limpar playlist</button></div>
+          <p class="helper-text">A reprodução começa após o visitante tocar em Reproduzir. Isso evita bloqueios de reprodução automática do navegador.</p>
         </div>
       </section>
 
@@ -163,6 +164,6 @@
   </div>
 
   <div id="adminWinnerModal" class="winner-modal" aria-hidden="true"><div class="winner-backdrop"></div><div class="winner-dialog" role="dialog" aria-modal="true"><div class="winner-confetti">✧ ♡ ✦ ♡ ✧</div><div class="winner-crown">👑</div><p class="eyebrow" id="adminWinnerEyebrow">TEMOS UM RESULTADO!</p><h2>Parabéns!</h2><p id="adminWinnerName" class="winner-name"></p><p class="muted-copy" id="adminWinnerSubtext">A sorte sorriu! 💗</p><button id="closeAdminWinner" class="primary-button" type="button">Continuar <span>♡</span></button></div></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./js/supabase-config.js"></script><script src="./js/supabase-api.js"></script><script src="./js/wheel.js"></script><script src="./js/admin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./js/supabase-config.js?v=20261110-v4"></script><script src="./js/supabase-api.js?v=20261110-v4"></script><script src="./js/wheel.js?v=20261110-v4"></script><script src="./js/admin.js?v=20261110-v4"></script>
 </body>
 </html>
