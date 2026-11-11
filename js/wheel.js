@@ -15,6 +15,7 @@
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+
     ctx.beginPath();
     ctx.arc(center, center, radius + 9, 0, TAU);
     ctx.fillStyle = '#fff';
@@ -46,6 +47,7 @@
       const end = start + slice;
       const middle = start + slice / 2;
 
+
       ctx.beginPath();
       ctx.moveTo(center, center);
       ctx.arc(center, center, radius, start, end);
@@ -67,7 +69,8 @@
         ctx.restore();
         return;
       }
-      
+
+
       const labelRadius = radius * 0.68;
       const sliceThickness = labelRadius * slice;
       const fontSize = Math.max(5, Math.min(25, sliceThickness * 0.085));
@@ -86,9 +89,11 @@
       ctx.shadowBlur = 2;
       ctx.font = `900 ${fontSize}px Nunito, sans-serif`;
 
+
       ctx.fillText(label, 0, 0, maxRadialTextWidth);
       ctx.restore();
     });
+
 
     ctx.beginPath();
     ctx.arc(center, center, radius, 0, TAU);
