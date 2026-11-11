@@ -165,9 +165,23 @@
     $('backgroundUrlWrap').hidden = bgType !== 'url';
     $('allowJoin').checked = settings.allow_join === true || settings.allow_join === '1' || typeof settings.allow_join === 'undefined';
     $('musicEnabled').checked = settings.music_enabled === true || settings.music_enabled === '1';
-    $('currentMusicTitle').textContent = settings.music_title || 'Nenhuma música enviada';
-    $('currentMusicDescription').textContent = settings.music_file ? 'A música está salva no armazenamento do site e pode ser tocada pelos visitantes.' : 'Envie um arquivo de áudio para colocar música no seu site.';
-    $('removeMusic').hidden = !settings.music_file;
+    const playlist = Array.isArray(settings.music_playlist) && settings.music_playlist.length ? settings.music_playlist.filter(track => track && track.url) : (settings.music_file ? [{ url: settings.music_file, title: settings.music_title || 'Música enviada' }] : []);
+    $('currentMusicTitle').textContent = playlist.length ? `${playlist.length} música(s) na playlist` : 'Nenhuma música enviada';
+    $('currentMusicDescription').textContent = playlist.length ? 'A playlist está salva e será reproduzida na ordem abaixo.' : 'Adicione uma ou mais músicas para tocar no seu site.';
+    $('removeMusic').hidden = !playlist.length;
+    const playlistElement = $('adminMusicPlaylist');
+    playlistElement.replaceChildren();
+    if (!playlist.length) {
+      const empty = document.createElement('p'); empty.className = 'empty-state'; empty.textContent = 'Sua playlist está vazia.'; playlistElement.append(empty);
+    } else {
+      playlist.forEach((track, index) => {
+        const row = document.createElement('div'); row.className = 'admin-music-row';
+        const number = document.createElement('span'); number.className = 'admin-music-number'; number.textContent = String(index + 1);
+        const title = document.createElement('span'); title.className = 'admin-music-name'; title.textContent = track.title || `Música ${index + 1}`;
+        const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'admin-music-remove'; remove.dataset.removeMusicIndex = String(index); remove.textContent = 'Remover';
+        row.append(number, title, remove); playlistElement.append(row);
+      });
+    }
   }
 
   function renderWinners() {
@@ -407,24 +421,36 @@
     } catch (error) { message(error.message, true); }
   });
 
-  $('musicFile').addEventListener('change', () => { $('musicUploadName').textContent = $('musicFile').files[0]?.name || 'MP3, OGG, WAV ou M4A · até 30 MB'; });
+  $('musicFile').addEventListener('change', () => {
+    const files = Array.from($('musicFile').files || []);
+    $('musicUploadName').textContent = files.length ? `${files.length} arquivo(s) selecionado(s)` : 'Selecione vários arquivos · até 30 MB cada';
+  });
   $('saveMusic').addEventListener('click', async () => {
-    const file = $('musicFile').files[0];
+    const files = Array.from($('musicFile').files || []);
     const button = $('saveMusic'); button.disabled = true;
     try {
-      if (file) {
+      for (const file of files) {
         const form = new FormData(); form.append('file', file);
         await api('/api/admin/upload/music', { method: 'POST', body: form });
       }
       await api('/api/admin/settings', { method: 'PUT', body: JSON.stringify({ music_enabled: $('musicEnabled').checked }) });
-      $('musicFile').value = ''; $('musicUploadName').textContent = 'MP3, OGG, WAV ou M4A · até 30 MB';
-      await refresh(); message('Configuração de música salva! ♫');
-    } catch (error) { message(error.message, true); }
+      $('musicFile').value = ''; $('musicUploadName').textContent = 'Selecione vários arquivos · até 30 MB cada';
+      await refresh(); message(files.length ? `${files.length} música(s) adicionada(s) à playlist! ♫` : 'Configuração da playlist salva! ♫');
+    } catch (error) { await refresh().catch(() => {}); message(error.message, true); }
     finally { button.disabled = false; }
   });
+  $('adminMusicPlaylist').addEventListener('click', async event => {
+    const button = event.target.closest('button[data-remove-music-index]');
+    if (!button) return;
+    const index = Number(button.dataset.removeMusicIndex);
+    if (!confirm('Remover esta música da playlist?')) return;
+    button.disabled = true;
+    try { await api(`/api/admin/music/playlist/${index}`, { method: 'DELETE' }); await refresh(); message('Música removida da playlist.'); }
+    catch (error) { message(error.message, true); button.disabled = false; }
+  });
   $('removeMusic').addEventListener('click', async () => {
-    if (!confirm('Remover a música atual do site?')) return;
-    try { await api('/api/admin/upload/music', { method: 'DELETE' }); await refresh(); message('Música removida.'); }
+    if (!confirm('Limpar toda a playlist? As músicas serão removidas do armazenamento do site.')) return;
+    try { await api('/api/admin/upload/music', { method: 'DELETE' }); await refresh(); message('Playlist limpa.'); }
     catch (error) { message(error.message, true); }
   });
 
