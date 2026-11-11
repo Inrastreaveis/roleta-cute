@@ -22,21 +22,41 @@
   }
 
   async function init() {
+    if (!sb) {
+      message.textContent = 'A biblioteca do Supabase não carregou. Atualize a página e tente novamente.';
+      return;
+    }
     try {
-      const { data: ownerData, error: ownerError } = await sb.rpc('owner_exists');
-      if (ownerError) throw ownerError;
-      ownerExists = Boolean(ownerData);
-      const { data: { session }, error } = await sb.auth.getSession();
-      if (error) throw error;
+      const { data: sessionData, error: sessionError } = await sb.auth.getSession();
+      if (sessionError) throw sessionError;
+      const session = sessionData?.session;
+
       if (session?.user) {
-        const { data: profile } = await sb.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-        if (profile && profile.role !== 'pending') { window.location.href = `${base}admin.html`; return; }
+        const { data: profile, error: profileError } = await sb.from('profiles')
+          .select('role').eq('id', session.user.id).maybeSingle();
+        if (profileError) throw profileError;
+        if (profile && profile.role !== 'pending') {
+          window.location.href = `${base}admin.html`;
+          return;
+        }
         message.textContent = 'Sua conta ainda aguarda autorização do proprietário.';
         await sb.auth.signOut();
       }
+
+      // If this helper RPC is temporarily unavailable, do not block an existing owner
+      // from reaching the sign-in form. The SQL repair file also recreates this function.
+      try {
+        const { data: ownerData, error: ownerError } = await sb.rpc('owner_exists');
+        if (ownerError) throw ownerError;
+        ownerExists = Boolean(ownerData);
+      } catch (ownerError) {
+        console.warn('Não foi possível verificar owner_exists; exibindo login padrão.', ownerError);
+        ownerExists = true;
+      }
       showMode(ownerExists ? 'login' : 'signup');
     } catch (error) {
-      message.textContent = `Não foi possível conectar ao Supabase: ${error.message || 'verifique a configuração'}`;
+      showMode('login');
+      message.textContent = `Não foi possível verificar sua sessão: ${error.message || 'verifique a conexão com o Supabase'}`;
     }
   }
 
