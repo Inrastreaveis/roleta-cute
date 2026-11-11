@@ -4,7 +4,7 @@
   const defaults = {
     site_title: 'Roleta Cute', site_subtitle: 'Entre na roleta e boa sorte! ✨',
     theme: 'pink', background_type: 'gradient', background_value: '',
-    music_file: '', music_title: '', music_enabled: false, allow_join: true
+    music_file: '', music_title: '', music_playlist: [], music_enabled: false, allow_join: true
   };
   const fail = error => { if (error) throw new Error(error.message || 'Não foi possível concluir a operação.'); };
   const bodyOf = options => {
@@ -17,9 +17,21 @@
   const cleanFile = name => String(name || 'arquivo').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '-').slice(-70);
 
   async function getSignedProfile() {
-    const { data: { user }, error: userError } = await sb.auth.getUser();
-    fail(userError);
-    if (!user) return null;
+    // getUser() without a saved session can return AuthSessionMissingError.
+    // Check the local session first so anonymous visitors can still load the public wheel.
+    const { data: sessionData, error: sessionError } = await sb.auth.getSession();
+    fail(sessionError);
+    const sessionUser = sessionData?.session?.user;
+    if (!sessionUser) return null;
+
+    const { data: userData, error: userError } = await sb.auth.getUser();
+    if (userError) {
+      if (userError.name === 'AuthSessionMissingError') return null;
+      fail(userError);
+    }
+    const user = userData?.user || sessionUser;
+    if (!user?.id) return null;
+
     const { data, error } = await sb.from('profiles')
       .select('id,email,username,role,can_draw,created_at')
       .eq('id', user.id).maybeSingle();
@@ -68,6 +80,22 @@
     fail(error);
   }
 
+  function getMusicPlaylist(settings) {
+    if (Array.isArray(settings?.music_playlist) && settings.music_playlist.length) return settings.music_playlist.filter(track => track && track.url);
+    if (settings?.music_file) return [{ url: settings.music_file, title: settings.music_title || 'Música enviada' }];
+    return [];
+  }
+
+  async function saveMusicPlaylist(playlist, extra = {}) {
+    const first = playlist[0] || null;
+    await updateSettings({
+      music_playlist: playlist,
+      music_file: first?.url || '',
+      music_title: first?.title || '',
+      ...extra
+    });
+  }
+
   async function uploadFile(form, folder) {
     const file = form.get('file');
     if (!(file instanceof File)) throw new Error('Escolha um arquivo primeiro.');
@@ -82,7 +110,12 @@
     });
     fail(error);
     const { data } = sb.storage.from(bucket).getPublicUrl(path);
-    if (folder === 'music') await updateSettings({ music_file: data.publicUrl, music_title: file.name });
+    if (isMusic) {
+      const settings = await publicSettings();
+      const playlist = getMusicPlaylist(settings);
+      playlist.push({ url: data.publicUrl, title: file.name, storage_path: path });
+      await saveMusicPlaylist(playlist);
+    }
     return { path: data.publicUrl };
   }
 
@@ -152,9 +185,36 @@
     if (url === '/api/admin/settings' && method === 'PUT') { await updateSettings(body); return { ok: true }; }
     if (url === '/api/admin/upload/background' && method === 'POST') return uploadFile(body, 'backgrounds');
     if (url === '/api/admin/upload/link-icon' && method === 'POST') return uploadFile(body, 'link-icons');
-    if (url === '/api/admin/upload/music' && method === 'POST') return uploadFile(body, 'music');
+    if (url === '/api/admin/upload/music' && method === 'POST') {
+      await currentProfile();
+      return uploadFile(body, 'music');
+    }
+    match = url.match(/^\/api\/admin\/music\/playlist\/(\d+)$/);
+    if (match && method === 'DELETE') {
+      await currentProfile();
+      const settings = await publicSettings();
+      const playlist = getMusicPlaylist(settings);
+      const index = Number(match[1]);
+      if (!Number.isInteger(index) || index < 0 || index >= playlist.length) throw new Error('Essa música não está mais na playlist.');
+      const [removed] = playlist.splice(index, 1);
+      if (removed.storage_path) {
+        const { error } = await sb.storage.from(bucket).remove([removed.storage_path]);
+        fail(error);
+      }
+      await saveMusicPlaylist(playlist, { music_enabled: playlist.length ? settings.music_enabled : false });
+      return { ok: true };
+    }
     if (url === '/api/admin/upload/music' && method === 'DELETE') {
-      await updateSettings({ music_file: '', music_title: '', music_enabled: false }); return { ok: true };
+      await currentProfile();
+      const settings = await publicSettings();
+      const playlist = getMusicPlaylist(settings);
+      const paths = playlist.map(track => track.storage_path).filter(Boolean);
+      if (paths.length) {
+        const { error } = await sb.storage.from(bucket).remove(paths);
+        fail(error);
+      }
+      await saveMusicPlaylist([], { music_enabled: false });
+      return { ok: true };
     }
     if (url === '/api/admin/links' && method === 'POST') {
       const { data: last, error: lastError } = await sb.from('links').select('sort_order').order('sort_order', { ascending: false }).limit(1).maybeSingle();
